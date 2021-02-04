@@ -162,6 +162,4 @@ class InsuranceResourceTest {
                 .body("details", Matchers.containsInAnyOrder("Payload incorrect, please fix it")
                 )
     }
-
-
 }
