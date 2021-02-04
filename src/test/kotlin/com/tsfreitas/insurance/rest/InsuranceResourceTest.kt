@@ -53,14 +53,16 @@ class InsuranceResourceTest {
 
         val withoutAgeAndDependents = baseRequestBody.toMap().minus("age").minus("dependents")
 
-        RestAssured.given()
+        val response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(withoutAgeAndDependents)
                 .`when`()
                 .post("/risk/simulate")
                 .then()
                 .statusCode(400)
-                .body("details", Matchers.hasItems("Field 'dependents' is required", "Field 'age' is required"))
+            .extract().`as`(Map::class.java)
+
+        Matchers.hasItems("Field 'dependents' is required", "Field 'age' is required").matches(response["details"])
     }
 
     @Test
@@ -72,20 +74,21 @@ class InsuranceResourceTest {
         invalidValues["income"] = -1
         invalidValues["marital_status"] = "none"
 
-        RestAssured.given()
+        val response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(invalidValues)
                 .`when`()
                 .post("/risk/simulate")
                 .then()
                 .statusCode(400)
-                .body("details", Matchers.containsInAnyOrder(
+                .extract().`as`(Map::class.java)
+
+        Matchers.containsInAnyOrder(
                         "Field 'age' must have value equal or greater than 0",
                         "Field 'dependents' must have value equal or greater than 0",
                         "Field 'income' must have value equal or greater than 0",
-                        "Field 'marital_status' must have the values 'SINGLE' or 'MARRIED'")
-                )
-                .body("details.size()", Matchers.equalTo(4))
+                        "Field 'marital_status' must have the values 'SINGLE' or 'MARRIED'").matches(response["details"])
+
     }
 
     @Test
@@ -105,16 +108,17 @@ class InsuranceResourceTest {
         val wrongOwnershipStatus = baseRequestBody.toMutableMap()
         wrongOwnershipStatus["house"] = mapOf("ownership_status" to "otherThing")
 
-        RestAssured.given()
+        val response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(wrongOwnershipStatus)
                 .`when`()
                 .post("/risk/simulate")
-                .then()
+                .then().assertThat()
                 .statusCode(400)
-                .body("details", Matchers.containsInAnyOrder(
-                        "Field 'house.ownership_status' must have the values 'OWNED' or 'MORTGAGED'")
-                )
+            .extract().`as`(Map::class.java)
+
+        Matchers.containsInAnyOrder(
+            "Field 'house.ownership_status' must have the values 'OWNED' or 'MORTGAGED'").matches(response["details"])
     }
 
     @Test
@@ -134,16 +138,17 @@ class InsuranceResourceTest {
         val wrongOwnershipStatus = baseRequestBody.toMutableMap()
         wrongOwnershipStatus["vehicle"] = mapOf("year" to -10)
 
-        RestAssured.given()
+        val response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(wrongOwnershipStatus)
                 .`when`()
                 .post("/risk/simulate")
                 .then()
                 .statusCode(400)
-                .body("details", Matchers.containsInAnyOrder(
-                        "Field 'vehicle.year' must be greater than 0")
-                )
+            .extract().`as`(Map::class.java)
+
+        Matchers.containsInAnyOrder(
+            "Field 'vehicle.year' must be greater than 0").matches(response["details"])
     }
 
 
@@ -152,14 +157,15 @@ class InsuranceResourceTest {
         val wrongPayload = baseRequestBody.toMutableMap()
         wrongPayload["risk_questions"] = listOf("a", 43, "!@")
 
-        RestAssured.given()
+        val response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(wrongPayload)
                 .`when`()
                 .post("/risk/simulate")
                 .then()
                 .statusCode(400)
-                .body("details", Matchers.containsInAnyOrder("Payload incorrect, please fix it")
-                )
+            .extract().`as`(Map::class.java)
+
+        Matchers.containsInAnyOrder("Payload incorrect, please fix it").matches(response["details"])
     }
 }
