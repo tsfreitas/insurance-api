@@ -5,6 +5,16 @@ import com.tsfreitas.insurance.model.SimulationResponse
 import java.util.*
 import javax.enterprise.context.ApplicationScoped
 
+private const val GOOD_INCOME = 200_000
+
+private const val SENIOR_AGE = 60
+private const val YOUNG_ADULT = 30
+private const val ADULT = 40
+
+private const val INELIGIBLE_SCORE = 999
+
+private const val NEW_CAR = 5
+
 @ApplicationScoped
 class RiskService {
 
@@ -27,13 +37,14 @@ class RiskService {
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
         return when {
             vehicle == null -> score.ineligible(InsuranceType.AUTO)
-            (currentYear - vehicle.year!!) <= 5 -> score.add(InsuranceType.AUTO, 1)
+            (currentYear - vehicle.year!!) <= NEW_CAR -> score.add(InsuranceType.AUTO, 1)
             else -> score
         }
     }
 
     private fun marriageRules(maritalStatus: String, score: Score) = when {
-        maritalStatus.equals(SimulationRequest.MaritalStatus.married.name) -> score.add(InsuranceType.LIFE, 1).deduct(InsuranceType.DISABILITY, 1)
+        maritalStatus.equals(SimulationRequest.MaritalStatus.MARRIED.name, true) -> score.add(InsuranceType.LIFE, 1)
+            .deduct(InsuranceType.DISABILITY, 1)
         else -> score
     }
 
@@ -43,30 +54,30 @@ class RiskService {
     }
 
     private fun houseRules(house: SimulationRequest.House?, score: Score) =
-            when {
-                house == null -> score.ineligible(InsuranceType.HOME)
-                house.ownershipStatus!!.equals(SimulationRequest.HouseStatus.mortgaged.name) -> score.add(InsuranceType.HOME, 1)
-                        .add(InsuranceType.DISABILITY, 1)
-                else -> score
-            }
+        when {
+            house == null -> score.ineligible(InsuranceType.HOME)
+            house.ownershipStatus!!.equals(SimulationRequest.HouseStatus.MORTGAGED.name, true) -> score
+                .add(InsuranceType.HOME, 1).add(InsuranceType.DISABILITY, 1)
+            else -> score
+        }
 
 
-    private fun incomeRules(income: Int, score: Score) =
-            when (income) {
-                0 -> score.ineligible(InsuranceType.DISABILITY)
-                in 200_000..Int.MAX_VALUE -> score.deduct(InsuranceType.ALL, 1)
-                else -> score
-            }
+    private fun incomeRules(income: Int, score: Score) = when (income) {
+        0 -> score.ineligible(InsuranceType.DISABILITY)
+        in GOOD_INCOME..Int.MAX_VALUE -> score.deduct(InsuranceType.ALL, 1)
+        else -> score
+    }
 
 
-    private fun ageRules(age: Int, score: Score) =
-            when (age) {
-                in 60..Int.MAX_VALUE -> score.ineligible(InsuranceType.DISABILITY)
-                        .ineligible(InsuranceType.LIFE)
-                in 0..30 -> score.deduct(InsuranceType.ALL, 2)
-                in 30..40 -> score.deduct(InsuranceType.ALL, 1)
-                else -> score
-            }
+    private fun ageRules(age: Int, score: Score) = when (age) {
+            in SENIOR_AGE..Int.MAX_VALUE -> score.ineligible(InsuranceType.DISABILITY)
+                .ineligible(InsuranceType.LIFE)
+            in 0..YOUNG_ADULT -> score.deduct(InsuranceType.ALL, 2)
+            in YOUNG_ADULT..ADULT -> score.deduct(InsuranceType.ALL, 1)
+            else -> score
+        }
+
+
 }
 
 private fun Boolean.toInt() = if (this) 1 else 0
@@ -76,22 +87,22 @@ private enum class InsuranceType {
 }
 
 private data class Score(
-        val auto: Int,
-        val disability: Int,
-        val home: Int,
-        val life: Int
+    val auto: Int,
+    val disability: Int,
+    val home: Int,
+    val life: Int
 )
 
 private fun Score.ineligible(type: InsuranceType): Score {
     var (auto, disability, home, life) = this
 
     when (type) {
-        InsuranceType.AUTO -> auto = 999
-        InsuranceType.DISABILITY -> disability = 999
-        InsuranceType.HOME -> home = 999
-        InsuranceType.LIFE -> life = 999
+        InsuranceType.AUTO -> auto = INELIGIBLE_SCORE
+        InsuranceType.DISABILITY -> disability = INELIGIBLE_SCORE
+        InsuranceType.HOME -> home = INELIGIBLE_SCORE
+        InsuranceType.LIFE -> life = INELIGIBLE_SCORE
         InsuranceType.ALL -> {
-            auto = 999; disability = 999; home = 999; life = 999
+            auto = INELIGIBLE_SCORE; disability = INELIGIBLE_SCORE; home = INELIGIBLE_SCORE; life = INELIGIBLE_SCORE
         }
     }
 

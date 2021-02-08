@@ -24,7 +24,8 @@ class RiskServiceTest {
                 maritalStatus = "married",
                 vehicle = SimulationRequest.Vehicle(2017),
                 riskQuestions = listOf(true, false, true),
-                house = SimulationRequest.House(ownershipStatus = SimulationRequest.HouseStatus.owned.name)
+                house = SimulationRequest.House(ownershipStatus =
+                    SimulationRequest.HouseStatus.OWNED.name.toLowerCase())
         )
 
         // WHEN
@@ -65,10 +66,10 @@ class RiskServiceTest {
                 age = 35,
                 dependents = 2,
                 income = 200,
-                maritalStatus = SimulationRequest.MaritalStatus.married.name,
+                maritalStatus = SimulationRequest.MaritalStatus.MARRIED.name.toLowerCase(),
                 riskQuestions = listOf(true, false, true),
                 vehicle = SimulationRequest.Vehicle(2018),
-                house = SimulationRequest.House(SimulationRequest.HouseStatus.mortgaged.name)
+                house = SimulationRequest.House(SimulationRequest.HouseStatus.MORTGAGED.name.toLowerCase())
         )
 
         // WHEN
@@ -90,7 +91,7 @@ class RiskServiceTest {
                 maritalStatus = "married",
                 riskQuestions = listOf(false, true, false),
                 vehicle = SimulationRequest.Vehicle(2018),
-                house = SimulationRequest.House(SimulationRequest.HouseStatus.owned.name)
+                house = SimulationRequest.House(SimulationRequest.HouseStatus.OWNED.name.toLowerCase())
         )
 
         // WHEN

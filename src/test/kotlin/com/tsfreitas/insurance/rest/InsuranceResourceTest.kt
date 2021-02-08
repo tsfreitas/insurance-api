@@ -87,7 +87,8 @@ class InsuranceResourceTest {
                         "Field 'age' must have value equal or greater than 0",
                         "Field 'dependents' must have value equal or greater than 0",
                         "Field 'income' must have value equal or greater than 0",
-                        "Field 'marital_status' must have the values 'SINGLE' or 'MARRIED'").matches(response["details"])
+                        "Field 'marital_status' must have the values 'SINGLE' or 'MARRIED'")
+            .matches(response["details"])
 
     }
 
