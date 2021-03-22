@@ -40,8 +40,8 @@ data class SimulationResponse(
 
         private fun translate(value: Int) = when {
                 value <= 0 -> "economic"
-                value in MIN_REGULAR_SCORE..MAX_REGULAR_SCORE -> "regular"
-                value in MIN_GOOD_SCORE..MAX_SCORE -> "responsible"
+                value in 1..2 -> "regular"
+                value in 3..10 -> "responsible"
                 else -> "ineligible"
             }
     }
